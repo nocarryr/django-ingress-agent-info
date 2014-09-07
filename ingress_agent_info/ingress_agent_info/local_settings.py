@@ -22,6 +22,7 @@ def get_secret_key():
 if SECRET_KEY is None:
     SECRET_KEY = get_secret_key()
 
+ALLOWED_HOSTS = []
 DATABASES = {}
 
 DEBUG = True
