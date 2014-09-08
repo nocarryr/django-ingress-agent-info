@@ -1,6 +1,7 @@
-from django.contrib import admin
-from locations.models import Location, ViewPort, LatLong
+from django.contrib.gis import admin
+from locations.models import Country, State, City, GeoCodingConf
 
-admin.site.register(Location)
-admin.site.register(ViewPort)
-admin.site.register(LatLong)
+admin.site.register(Country, admin.GeoModelAdmin)
+admin.site.register(State, admin.GeoModelAdmin)
+admin.site.register(City, admin.GeoModelAdmin)
+admin.site.register(GeoCodingConf)

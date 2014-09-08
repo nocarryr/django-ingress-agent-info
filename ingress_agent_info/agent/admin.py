@@ -1,10 +1,5 @@
-from django.contrib import admin
+from django.contrib.gis import admin
 from agent.models import Agent, PlayArea
-
-class PlayAreaInline(admin.StackedInline):
-    model = PlayArea
     
-class AgentAdmin(admin.ModelAdmin):
-    inlines = [PlayAreaInline]
-    
-admin.site.register(Agent, AgentAdmin)
+admin.site.register(Agent, admin.GeoModelAdmin)
+admin.site.register(PlayArea, admin.GeoModelAdmin)
