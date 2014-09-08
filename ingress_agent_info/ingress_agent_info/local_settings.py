@@ -23,16 +23,7 @@ if SECRET_KEY is None:
     SECRET_KEY = get_secret_key()
 
 ALLOWED_HOSTS = []
-DATABASES = {
-#    'default': {
-#        'ENGINE':'django.db.backends.mysql', 
-#        'NAME':'ingress_agent_info', 
-#        'USER':'ingress_agent', 
-#        'PASSWORD':'ingress', 
-#        'HOST':'192.168.1.50', 
-#        'PORT':'3306', 
-#    }, 
-}
+DATABASES = {}
 
 DEBUG = True
 TEMPLATE_DEBUG = True
