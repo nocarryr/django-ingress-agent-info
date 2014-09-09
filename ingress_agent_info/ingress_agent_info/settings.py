@@ -39,8 +39,11 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.gis', 
+    'sekizai', 
+    'social.apps.django_app.default', 
     'agent', 
     'locations', 
+    'user_profile', 
 )
 
 MIDDLEWARE_CLASSES = (
@@ -50,6 +53,19 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+)
+
+TEMPLATE_CONTEXT_PROCESSORS = (
+    'django.contrib.auth.context_processors.auth',
+    'django.core.context_processors.debug',
+    'django.core.context_processors.i18n', 
+    'django.core.context_processors.media',
+    'django.core.context_processors.static',
+    'django.core.context_processors.tz', 
+    'django.contrib.messages.context_processors.messages', 
+    'sekizai.context_processors.sekizai', 
+    'social.apps.django_app.context_processors.backends',
+    'social.apps.django_app.context_processors.login_redirect',
 )
 
 ROOT_URLCONF = 'ingress_agent_info.urls'
@@ -74,7 +90,10 @@ DATABASES.update(local_settings.DATABASES)
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+if getattr(local_settings, 'TIME_ZONE', None) is not None:
+    TIME_ZONE = local_settings.TIME_ZONE
+else:
+    TIME_ZONE = 'UTC'
 
 USE_I18N = True
 
@@ -87,3 +106,36 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.6/howto/static-files/
 
 STATIC_URL = '/static/'
+
+SOCIAL_AUTH_PIPELINE = (
+    'social.pipeline.social_auth.social_details',
+    'social.pipeline.social_auth.social_uid',
+    'social.pipeline.social_auth.auth_allowed', 
+    'social.pipeline.social_auth.social_user',
+    'social.pipeline.user.get_username',
+    'social.pipeline.user.create_user',
+    'social.pipeline.social_auth.associate_user',
+    'social.pipeline.social_auth.load_extra_data',
+    'social.pipeline.user.user_details'
+)
+
+AUTHENTICATION_BACKENDS = (
+    #'social.backends.google.GoogleOAuth',
+    #'social.backends.google.GoogleOAuth2',
+    'social.backends.google.GooglePlusAuth',
+    'django.contrib.auth.backends.ModelBackend',
+)
+SOCIAL_AUTH_STORAGE = 'social.apps.django_app.default.models.DjangoStorage'
+AUTH_USER_MODEL = 'user_profile.CustomUser'
+LOGIN_URL = '/login/'
+LOGIN_REDIRECT_URL = '/done/'
+#URL_PATH = ''
+SOCIAL_AUTH_GOOGLE_OAUTH_SCOPE = [
+    'https://www.googleapis.com/auth/plus.login'
+]
+#SOCIAL_AUTH_EMAIL_FORM_HTML = 'email_signup.html'
+#SOCIAL_AUTH_USERNAME_FORM_HTML = 'username_signup.html'
+SOCIAL_AUTH_GOOGLE_OAUTH_KEY = local_settings.GOOGLE_OAUTH_KEY
+SOCIAL_AUTH_GOOGLE_OAUTH_SECRET = local_settings.GOOGLE_OAUTH_SECRET
+SOCIAL_AUTH_GOOGLE_PLUS_KEY = local_settings.GOOGLE_OAUTH_KEY
+SOCIAL_AUTH_GOOGLE_PLUS_SECRET = local_settings.GOOGLE_OAUTH_SECRET

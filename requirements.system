@@ -1,0 +1,8 @@
+python-pip
+libmysqlclient-dev
+libgeos-c1
+python-geoip
+libproj-dev
+gdal-bin
+python-gdal
+spatialite-bin

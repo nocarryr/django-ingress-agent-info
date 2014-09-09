@@ -1,8 +1,8 @@
-from django.contrib.auth.models import User
 from django.contrib.gis.db import models
+from user_profile.models import CustomUser
 
 class Agent(models.Model):
-    user = models.OneToOneField(User)
+    user = models.OneToOneField(CustomUser)
     gPlusUserId = models.CharField(max_length=100, blank=True, null=True)
     agent_name = models.CharField(max_length=100, unique=True)
     agent_level = models.PositiveIntegerField()

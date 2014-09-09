@@ -1,0 +1,4 @@
+django>=1.6
+pytz
+python-social-auth
+django-sekizai
