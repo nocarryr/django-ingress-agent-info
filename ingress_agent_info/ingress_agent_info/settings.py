@@ -55,6 +55,11 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 )
 
+AUTHENTICATION_BACKENDS = (
+    'django.contrib.auth.backends.ModelBackend', 
+    'user_profile.auth_handler.GPlusAuthBackend', 
+)
+
 TEMPLATE_CONTEXT_PROCESSORS = (
     'django.contrib.auth.context_processors.auth',
     'django.core.context_processors.debug',
@@ -62,6 +67,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'django.core.context_processors.media',
     'django.core.context_processors.static',
     'django.core.context_processors.tz', 
+    'django.core.context_processors.request', 
     'django.contrib.messages.context_processors.messages', 
     'sekizai.context_processors.sekizai', 
     'social.apps.django_app.context_processors.backends',
@@ -71,7 +77,6 @@ TEMPLATE_CONTEXT_PROCESSORS = (
 ROOT_URLCONF = 'ingress_agent_info.urls'
 
 WSGI_APPLICATION = 'ingress_agent_info.wsgi.application'
-
 
 # Database
 # https://docs.djangoproject.com/en/1.6/ref/settings/#databases
@@ -85,6 +90,32 @@ DATABASES = {
 
 DATABASES.update(local_settings.DATABASES)
 
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(message)s'
+        },
+        'simple': {
+            'format': '%(levelname)s %(message)s'
+        },
+    },
+    'handlers': {
+        'console': {
+            'level': 'INFO',
+            'class': 'logging.StreamHandler',
+            'formatter':'simple', 
+        },
+    },
+    'loggers': {
+        'custom': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+    },
+}
 # Internationalization
 # https://docs.djangoproject.com/en/1.6/topics/i18n/
 
@@ -101,41 +132,18 @@ USE_L10N = True
 
 USE_TZ = True
 
+TEMPLATE_DIRS = (
+    os.path.join(BASE_DIR, 'templates'), 
+)
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.6/howto/static-files/
 
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static'), 
+]
+
 STATIC_URL = '/static/'
 
-SOCIAL_AUTH_PIPELINE = (
-    'social.pipeline.social_auth.social_details',
-    'social.pipeline.social_auth.social_uid',
-    'social.pipeline.social_auth.auth_allowed', 
-    'social.pipeline.social_auth.social_user',
-    'social.pipeline.user.get_username',
-    'social.pipeline.user.create_user',
-    'social.pipeline.social_auth.associate_user',
-    'social.pipeline.social_auth.load_extra_data',
-    'social.pipeline.user.user_details'
-)
-
-AUTHENTICATION_BACKENDS = (
-    #'social.backends.google.GoogleOAuth',
-    #'social.backends.google.GoogleOAuth2',
-    'social.backends.google.GooglePlusAuth',
-    'django.contrib.auth.backends.ModelBackend',
-)
-SOCIAL_AUTH_STORAGE = 'social.apps.django_app.default.models.DjangoStorage'
-AUTH_USER_MODEL = 'user_profile.CustomUser'
-LOGIN_URL = '/login/'
-LOGIN_REDIRECT_URL = '/done/'
-#URL_PATH = ''
-SOCIAL_AUTH_GOOGLE_OAUTH_SCOPE = [
-    'https://www.googleapis.com/auth/plus.login'
-]
-#SOCIAL_AUTH_EMAIL_FORM_HTML = 'email_signup.html'
-#SOCIAL_AUTH_USERNAME_FORM_HTML = 'username_signup.html'
-SOCIAL_AUTH_GOOGLE_OAUTH_KEY = local_settings.GOOGLE_OAUTH_KEY
-SOCIAL_AUTH_GOOGLE_OAUTH_SECRET = local_settings.GOOGLE_OAUTH_SECRET
-SOCIAL_AUTH_GOOGLE_PLUS_KEY = local_settings.GOOGLE_OAUTH_KEY
-SOCIAL_AUTH_GOOGLE_PLUS_SECRET = local_settings.GOOGLE_OAUTH_SECRET
+GOOGLE_OAUTH_KEY = local_settings.GOOGLE_OAUTH_KEY
+GOOGLE_OAUTH_SECRET = local_settings.GOOGLE_OAUTH_SECRET

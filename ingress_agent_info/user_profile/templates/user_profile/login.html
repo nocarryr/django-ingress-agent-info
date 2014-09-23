@@ -1,0 +1,127 @@
+{% extends "bootstrap-base.html" %}
+{% load static sekizai_tags %}
+
+{% block addblocks %}
+{{ block.super }}
+{% addtoblock "css" %}
+<link rel="stylesheet" href="{% static 'css/login.css' %}">
+{% endaddtoblock %}
+
+{% addtoblock "js-head" %}
+{% if not G_CONNECTED %}
+<script type="text/javascript">
+    (function () {
+        var po = document.createElement('script'); po.type = 'text/javascript'; po.async = true; po.src = 'https://plus.google.com/js/client:plusone.js?onload=start';
+        var s = document.getElementsByTagName('script')[0];
+        s.parentNode.insertBefore(po, s);
+    })();
+</script>
+{% endif %}
+{% endaddtoblock %}
+
+{% addtoblock "js-foot" %}
+{% if not G_CONNECTED %}
+<script src="{% static 'js/jquery-cookie/jquery.cookie.js' %}"></script>
+<script type="text/javascript">
+    var signInResultQueue = [],
+        signInCallback = function(result){
+            signInResultQueue.push(result);
+            if (typeof(window.doSignInCallback) != 'undefined'){
+                window.doSignInCallback();
+            }
+        };
+    $(function(){
+        window.doSignInCallback = function(){
+            if (signInResultQueue.length == 0){
+                return;
+            }
+            result = signInResultQueue[0];
+            signInResultQueue = signInResultQueue.slice(1);
+            console.log(result);
+            if (result.error){
+                if (result.error == 'immediate_failed'){
+                    return;
+                }
+                alert('An error happened:', result['error']);
+            } else {
+                var $form = $("#google-plus");
+                $("input", $form).each(function(){
+                    var $el = $(this);
+                    if ($el.attr("name") == "csrfmiddlewaretoken"){
+                        if (!$el.val()){
+                            $el.val($.cookie("csrftoken"));
+                        }
+                    } else if ($el.attr("id") != "state"){
+                        $el.val(result[$el.attr("id")]);
+                    }
+                });
+                $form.submit();
+                //$.post($form.attr('action'), $form.serialize(), function(data, textStatus, jqx){
+                //    console.log(data);
+                //    console.log(textStatus, jqx);
+                //    if (result.status.signed_in && $form.data("requestSent")){
+                //        window.location.replace('/');
+                //        return false;
+                //    }
+                //    $form.data('requestSent', true);
+                //});
+            }
+            if (signInResultQueue.length > 0){
+                window.doSignInCallback();
+            }
+        };
+        window.doSignInCallback();
+    });
+</script>
+{% endif %}
+{% endaddtoblock %}
+{% endblock %}
+
+
+{% block body %}
+{% if not G_CONNECTED %}
+<div class="container">
+    {% comment %}
+    <form class="form-signin" role="form" method="post" action="{% url 'user_profile.views.login_post' %}">
+        <h3 class="form-signin-heading">Please sign in</h3>
+        <input type="text" class="form-control" name="username" placeholder="Username" required autofocus>
+        <input type="password" class="form-control" name="password" placeholder="Password" required>
+        <button class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
+        <input type="hidden" name="next" value="{{ next }}" />
+    </form>
+    {% if form.errors %}
+    <div class="well well-sm">
+        <p class="signin-error-label">Your username and password didn't match. Please try again.</p>
+    </div>
+    {% endif %}
+    {% endcomment %}
+</div>
+<div class="container">
+    <div id="signinButton">
+        <span class="g-signin"
+            data-scope="{{ G_SCOPE }}"
+            data-clientid="{{ G_CLIENT_ID }}"
+            data-redirecturi="postmessage"
+            data-accesstype="offline"
+            data-cookiepolicy="single_host_origin"
+            data-callback="signInCallback"
+            data-theme="dark">
+        </span>
+  </div>
+  <div id="profile" class="hidden"></div>
+</div>
+<form id="google-plus" method="post" action="{% url 'user_profile.views.auth_return' %}">{% csrf_token %}
+    <input id="access_token" type="hidden" name="access_token" value="">
+    <input id="code" type="hidden" name="code" value="">
+    <input id="state" type="hidden" name="state" value="{{ request.session.state }}">
+</form>
+
+{% else %}
+
+<div class="container">
+    <button href="/" class="btn btn-lg btn-primary btn-block">Continue</button>
+</div>
+
+{% endif %}
+
+{% endblock %}

@@ -1,4 +1,4 @@
 django>=1.6
 pytz
-python-social-auth
+google-api-python-client
 django-sekizai

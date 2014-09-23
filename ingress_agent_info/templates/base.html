@@ -1,0 +1,25 @@
+{% load static sekizai_tags %}
+<!DOCTYPE html>
+<html>
+<head>
+    {% block head_pre_css %}
+    <meta charset="utf-8">
+    <title>{% block page_title %}{% endblock %}</title>
+    {% endblock %}
+    {% render_block "css" %}
+    {% render_block "js-head" %}
+</head>
+<body>
+    {% block body %}{% endblock body %}
+    {% render_block "js-foot" %}
+</body>
+</html>
+
+{% block base_page_head_tags %}
+{% addtoblock "js-foot" %}
+<script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
+{% endaddtoblock %}
+{% endblock %}
+
+{% block addblocks %}
+{% endblock %}

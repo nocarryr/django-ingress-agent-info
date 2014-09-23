@@ -1,0 +1,49 @@
+{% extends "bootstrap-base.html" %}
+{% load static sekizai_tags %}
+
+{% block addblocks %}
+{{ block.super }}
+{% addtoblock "css" %}
+<link rel="stylesheet" href="{% static 'css/login.css' %}">
+{% endaddtoblock %}
+
+{% addtoblock "js-foot" %}
+<script type="text/javascript">
+    $(function(){
+        var doSubmit = function(confirmValue){
+            $("#confirm-value").val(confirmValue);
+            $("#logout-form").submit();
+        };
+        $("#confirm-btn").click(function(){
+            doSubmit(true);
+        });
+        $("#cancel-btn").click(function(){
+            doSubmit(false);
+        });
+        $("#disconnect-btn").click(function(){
+            doSubmit('disconnect');
+        });
+    });
+</script>
+{% endaddtoblock %}
+{% endblock %}
+
+{% block body %}
+<div class="container">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title">Logout Confirmation</h3>
+        </div>
+        <div class="panel-body">
+            <form role="form" id="logout-form" action="{% url 'user_profile.views.logout_post' %}">{% csrf_token %}
+                <div class="button-group">
+                    <button type="button" class="btn btn-default" id="confirm-btn">Confirm</button>
+                    <button type="button" class="btn btn-default" id="cancel-btn">Cancel</button>
+                </div>
+                <button type="button" class="btn btn-warning" id="disconnect-btn">Disconnect from Google Plus</button>
+                <input type="hidden" name="confirm-value" id="confirm-value" value="">
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
