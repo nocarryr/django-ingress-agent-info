@@ -24,7 +24,7 @@ def build_context(cdict=None, req=None):
         d = cdict['G_CREDENTIALS'] = auth_handler.get_credentials(req)
         if d is not False:
             g_connected = True
-            cdict['profile'] = d['user'].profile
+            cdict['my_info'] = {'agent':d['user'].agent, 'profile':d['user'].profile}
         
     cdict['G_CONNECTED'] = g_connected
     return cdict
@@ -47,25 +47,6 @@ def login_page(req, next_page=None):
     user = authenticate(request=req)
     if user is not None:
         return redirect(next_page)
-#    user = None
-#    if req.user.id is not None:
-#        try:
-#            user = User.objects.get(id=req.user.id)
-#        except User.DoesNotExist:
-#            pass
-#    if user is not None and user.is_active:
-#        try:
-#            profile = user.profile
-#        except GPlusProfile.DoesNotExist:
-#            profile = None
-#        if profile is not None:
-#            try:
-#                credentials = user.gplus_credential
-#            except GPlusCredential.DoesNotExist:
-#                credentials = None
-#        if profile is not None and credentials is not None:
-#            auth_login(req, user)
-#        logger.info('user: %s,  profile: %s, credentials: %s' % (user, profile, credentials))
     logger.info('req.user: %s' % (req.user))
     if req.user.is_authenticated():
         return redirect(next_page)

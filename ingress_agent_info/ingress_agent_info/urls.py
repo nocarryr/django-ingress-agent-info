@@ -7,6 +7,7 @@ admin.autodiscover()
 urlpatterns = patterns('',
     url(r'^$', 'user_profile.views.index'), 
     url(r'^accounts/', include('user_profile.urls')), 
+    url(r'^agent/', include('agent.urls')), 
     url(r'^admin/', include(admin.site.urls)),
 )
 

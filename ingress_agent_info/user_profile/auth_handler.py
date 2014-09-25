@@ -4,18 +4,21 @@ import httplib2
 import json
 from apiclient.discovery import build
 from oauth2client.client import flow_from_clientsecrets
-from oauth2client import xsrfutil
 from oauth2client.django_orm import Storage
 
 from django.conf import settings
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
+from django.contrib.contenttypes.models import ContentType
 from django.http import HttpResponseRedirect
 from django.core.urlresolvers import reverse
 from django.utils.crypto import get_random_string
 
-from user_profile.models import GPlusProfile, GPlusCredential
 import logging
 logger = logging.getLogger('custom')
+
+User = get_user_model()
+GPlusProfile = None
+GPlusCredential = None
 
 SCOPE = 'https://www.googleapis.com/auth/plus.login'
 REDIRECT_URI = None
@@ -66,9 +69,6 @@ def get_redirect_uri():
     return REDIRECT_URI
     
 def get_flow():
-    #global FLOW
-    #if FLOW is not None:
-    #    return FLOW
     get_client_secrets()
     flow = flow_from_clientsecrets(CLIENT_SECRETS_FILE, 
                                    scope='', 
@@ -77,36 +77,38 @@ def get_flow():
 
 def get_auth_redirect(request):
     flow = get_flow()
-    #state = request.REQUEST['csrfmiddlewaretoken']
-    #state = xsrfutil.generate_token(settings.SECRET_KEY, 
-    #                                request.REQUEST['csrfmiddlewaretoken'])
     state = request.session['state']
     flow.params['state'] = state
     logger.info('session_key = %s' % (state))
     auth_url = flow.step1_get_authorize_url()
     return HttpResponseRedirect(auth_url)
     
-def get_credentials(request):
-    storage = Storage(GPlusCredential, 'user', request.user.id, 'credential')
+def get_credentials(request=None, user_id=None):
+    global GPlusCredential
+    if GPlusCredential is None:
+        GPlusCredential = ContentType.objects.get(app_label='user_profile', model='gpluscredential').model_class()
+    if user_id is None:
+        user_id = request.user.id
+    storage = Storage(GPlusCredential, 'user', user_id, 'credential')
     credentials = storage.get()
     if credentials is None or credentials.invalid is True:
         return False
-    return {'user': User.objects.get(id=request.user.id), 'credentials':credentials}
+    return {'user': User.objects.get(id=user_id), 'credentials':credentials}
     
 def validate_credentials(request):
     flow = get_flow()
     state = request.REQUEST.get('state')
-    #logger.info('session_key = %s' % (request.session.session_key))
-    #logger.info(str(request.REQUEST))
-    #if True:#not state:
-    #    state = request.session['state']
-    #state = request.REQUEST['csrfmiddlewaretoken']
     if state != request.session['state']:
         logger.info('state token mis-match')
         return False
     return flow.step2_exchange(request.REQUEST)
     
 def add_user_from_credentials(request, credentials):
+    global GPlusProfile, GPlusCredential
+    if GPlusCredential is None:
+        GPlusCredential = ContentType.objects.get(app_label='user_profile', model='gpluscredential').model_class()
+    if GPlusProfile is None:
+        GPlusProfile = ContentType.objects.get(app_label='user_profile', model='gplusprofile').model_class()
     user = request.user
     if user.id is None or user.profile is None:
         profile_data = get_profile_data(request, credentials)
@@ -125,9 +127,9 @@ def add_user_from_credentials(request, credentials):
         storage.put(credentials)
     return profile
     
-def build_service(request, credentials=None):
+def build_service(request, credentials=None, user_id=None):
     if credentials is None:
-        d = get_credentials(request)
+        d = get_credentials(request, user_id)
         if d is False:
             return d
         credentials = d['credentials']
@@ -135,8 +137,8 @@ def build_service(request, credentials=None):
     http = credentials.authorize(http)
     return build('plus', 'v1', http=http)
     
-def get_profile_data(request, credentials=None):
-    service = build_service(request, credentials)
+def get_profile_data(request=None, credentials=None, user_id=None):
+    service = build_service(request, credentials, user_id)
     return service.people().get(userId='me').execute()
     
 class GPlusAuthBackend(object):

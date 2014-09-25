@@ -1,0 +1,8 @@
+{% extends "bootstrap-base.html" %}
+
+{% block navbaritems %}
+<ul class="nav navbar-nav navbar-right">
+    <li><a href="#">{{ profile.display_name }}</a></li>
+    <li><a href="{% url 'user_profile.views.logout' %}">Logout</a></li>
+</ul>
+{% endblock %}

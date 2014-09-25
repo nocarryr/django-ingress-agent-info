@@ -1,7 +1,11 @@
 import json
 from django.db import models
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from oauth2client.django_orm import CredentialsField
+
+User = get_user_model()
+
+from auth_handler import get_profile_data
 
 import logging
 logger = logging.getLogger('custom')
@@ -12,6 +16,7 @@ class GPlusProfile(models.Model):
     display_name = models.CharField(max_length=100)
     profile_url = models.URLField()
     image_url = models.URLField(blank=True, null=True)
+    gplus_data_json = models.CharField(max_length=500)
     gplus_data_map = {
         'id':'gplus_id', 
         'displayName':'display_name', 
@@ -33,10 +38,8 @@ class GPlusProfile(models.Model):
                 if email['type'] == 'account':
                     model_data['user__email'] = email
                     break
-        if email:
-            model_data['user__username'] = ','.join(email.split('@'))
-        else:
-            model_data['user__username'] = ''.join(gplus_data['displayName'].split(' '))
+        model_data['user__username'] = 'GPLUS_%s' % (gplus_data['id'])
+        model_data['gplus_data_json'] = json.dumps(gplus_data)
         return model_data
     @classmethod
     def split_user_kwargs(cls, **kwargs):
@@ -64,6 +67,8 @@ class GPlusProfile(models.Model):
         logger.info('ukwargs: \n%s\n\npkwargs: %s' % (ukwargs, pkwargs))
         profile, created = cls.objects.get_or_create(**pkwargs)
         return profile, created
+    def get_profile_data(self):
+        return get_profile_data(user_id=self.user.id)
     def __unicode__(self):
         return unicode(self.user)
     
@@ -72,4 +77,6 @@ class GPlusProfile(models.Model):
 class GPlusCredential(models.Model):
     user = models.OneToOneField(User, related_name='gplus_credential')
     credential = CredentialsField()
+    def __unicode__(self):
+        return u'%s credentials' % (self.user)
 

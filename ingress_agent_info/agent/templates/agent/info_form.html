@@ -1,0 +1,52 @@
+{% extends "signed_in_base.html" %}
+{% load static sekizai_tags %}
+
+{% block addblocks %}
+{{ block.super }}
+{% addtoblock "js-foot" %}
+<script type="text/javascript">
+    $(function(){
+        var $form = $(".agent-info-form form");
+        $("input", $form).each(function(){
+            var $this = $(this);
+            $this.val($this.data('value'));
+        });
+        $("#level").val($("#level").data('value'));
+    });
+</script>
+{% endaddtoblock %}
+{% endblock %}
+
+{% block content %}
+<div class="container agent-info agent-info-form">
+    <form role="form" action="." method="post">
+        <div class="form-group">
+            {% csrf_token %}
+        </div>
+        <div class="form-group">
+            <label for="first_name">First Name</label>
+            <input type="text" name="user__first_name" id="first_name" class="form_control" placeholder="First Name" data-value="{{ agent.user.first_name }}">
+        </div>
+        <div class="form-group">
+            <label for="last_name">Last Name</label>
+            <input type="text" name="user__last_name" id="last_name" class="form_control" placeholder="Last Name" data-value="{{ agent.user.last_name }}">
+        </div>
+        <div class="form-group">
+            <label for="email">Email</label>
+            <input type="email" name="user__email" id="email" class="form_control" placeholder="Email" data-value="{{ agent.user.email }}">
+        </div>
+        <div class="form-group">
+            <label for="agent_name">Agent Name</label>
+            <input type="text" name="agent__agent_name" id="agent_name" placeholder="Agent Name" data-value="{{ agent.agent.agent_name }}">
+        </div>
+        <div class="form-group">
+            <label for="level">Your Current Level</label>
+            <select class="form-control" name="agent__level" id="level" data-value="{{ agent.agent.agent_level }}">
+            {% for i in agent_level_range %}
+                <option value="{{ i }}"{% if agent.agent.agent_level == i %} selected {% endif %}>{{ i }}</option>
+            {% endfor %}
+        </div>
+        <button type="submit" class="btn btn-primary">Submit</button>
+    </form>
+</div>
+{% endblock %}

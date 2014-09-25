@@ -31,6 +31,14 @@
             }
         };
     $(function(){
+        var serializeForm = function(){
+            var d = {};
+            $("#google-plus input").each(function(){
+                var $this = $(this);
+                d[$this.attr('name')] = $this.val();
+            });
+        };
+        console.log("form initial: ", serializeForm());
         window.doSignInCallback = function(){
             if (signInResultQueue.length == 0){
                 return;
@@ -56,15 +64,6 @@
                     }
                 });
                 $form.submit();
-                //$.post($form.attr('action'), $form.serialize(), function(data, textStatus, jqx){
-                //    console.log(data);
-                //    console.log(textStatus, jqx);
-                //    if (result.status.signed_in && $form.data("requestSent")){
-                //        window.location.replace('/');
-                //        return false;
-                //    }
-                //    $form.data('requestSent', true);
-                //});
             }
             if (signInResultQueue.length > 0){
                 window.doSignInCallback();
